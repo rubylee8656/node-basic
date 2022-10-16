@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .photo {
+            display: inline-block;
+            position: relative;
+            width: 200px;
+            height: 200px;
+            border: 1px solid blue;
+            overflow: hidden;
+        }
+
+        .photo img {
+            position: absolute;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <form name="form1">
+        <input type="file" accept="images/*" name="photos" multiple onchange="upload()">
+    </form>
+    <div id="photo-div">
+        <!--
+        <div class="photo">
+            <img src="\uploads\/8667c340-212e-4baf-b71a-ad514028474f.jpg" alt="" width="300">
+        </div>
+        -->
+    </div>
+
+    <script>
+        const item_tpl_func = ({ filename }) =>
+            `<div class="photo">
+            <img src="/uploads/${filename}" alt="" width="300">
+            </div>`;
+
+
+        async function upload() {
+            const fd = new FormData(document.form1);
+
+            const r = await fetch('/try-upload2', {
+                method: 'POST',
+                body: fd
+            });
+
+            const result = await r.json();
+            console.log(result);
+
+            let str = '';
+
+            if (result && result.length) {
+                str = result.map(obj => item_tpl_func(obj)).join('');
+            }
+
+            document.querySelector('#photo-div').innerHTML = str;
+        }
+
+    </script>
+</body>
+
+</html>
