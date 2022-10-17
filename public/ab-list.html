@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/fontawesome/css/all.css">
+    <title>Document</title>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row justify-content-end">
+            <div class="col-lg-3">
+                <form class="d-flex" role="search" onsubmit="doSearch(event)">
+                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"
+                        name="search" value="">
+                    <button class="btn btn-outline-success" type="submit">Search</button>
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col pagi-container">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col table-container">
+            </div>
+        </div>
+    </div>
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.11.5/dayjs.min.js"></script>
+    <script>
+
+        const t_container = document.querySelector('.table-container');
+        const p_container = document.querySelector('.pagi-container');
+
+        function renderPagi({page,totalPages}){
+            return`
+            <nav aria-label="Page navigation example">
+                    <ul class="pagination">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#">
+                                <i class="fa-solid fa-circle-arrow-left"></i>
+                            </a>
+                        </li>
+                        ${
+                            Array(11).fill(1).map((el,i)=>{
+                                const p = page-5+i;
+                                if(p<1 ||p>totalPages) return'';
+                                return`
+                                <li class="page-item ${p===page ? 'active':''}">
+                                    <a class="page-link" href="javascript:gotoPage(${p})">${p}</a>
+                                </li>
+                                `
+                            }).join('')
+                        }
+                        <li class="page-item ">
+                            <a class="page-link" href="#">
+                                <i class="fa-solid fa-circle-arrow-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            `;
+        }
+        function renderTable({rows}){
+            return`
+            <table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">姓名</th>
+                            <th scope="col">手機</th>
+                            <th scope="col">email</th>
+                            <th scope="col">生日</th>
+                            <th scope="col">地址</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows.map(el=>{
+                            return`
+                            <tr>
+                                <td>${el.sid}</td>
+                                <td>${el.name}</td>
+                                <td>${el.mobile}</td>
+                                <td>${el.email}</td>
+                                <td>${dayjs(el.birthday).format('YYYY-MM-DD')}</td>
+                                <td>${el.address}</td>
+                            </tr>
+                            `;
+                        }).join('')}
+                        
+                    </tbody>
+                </table>
+            `;
+        }
+
+        const search = location.search;
+        fetch('/ab/api'+search)
+        .then(r=>r.json())
+        .then(result=>{
+            console.log(result);
+            t_container.innerHTML = renderTable(result);
+            p_container.innerHTML = renderPagi(result);
+        })
+
+        async function getDate(){
+
+            const usp = new URLSearchParams(location.search);
+            const r = await fetch('/ab/api?'+usp.toString());
+            const result = await r.json();
+
+            console.log(result);
+            t_container.innerHTML = renderTable(result);
+            p_container.innerHTML = renderPagi(result);
+
+        }
+
+        function doSearch(event){
+            event.preventDefault();
+            const f = event.currentTarget;
+            const usp = new URLSearchParams({search:f.search.value});
+            history.pushState('','','?'+usp.toString());
+            getDate();
+
+        }
+        function gotoPage(p){
+
+            const usp = new URLSearchParams(location.search);
+            usp.set('page',p);
+            history.pushState('','','?'+usp.toString());
+            getDate();
+
+        }
+
+        window.addEventListener('popstate',function(){
+            console.log(location.search);
+            const usp = new URLSearchParams(location.search);
+            if(usp.get('search')){
+                document.forms[0].search.value = usp.get('search');
+            }
+            else
+            {
+                document.forms[0].search.value = ''; 
+            }
+        })
+    </script>
+</body>
+
+</html>
