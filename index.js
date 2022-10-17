@@ -154,6 +154,22 @@ app.get('/try-db-add', async (req, res) => {
    res.json({insertId, affectedRows});
    */
 });
+
+app.get('/try-db-add2', async (req, res) => {
+    const name = 'HOHO';
+    const email = 'hoho@ggg.com';
+    const mobile = '0988123456';
+    const birthday = '2022-10-15';
+    const address = '宜蘭縣';
+    const sql = "INSERT INTO `address_book` SET ?";
+
+    const [result] = await db.query(sql, [{ name, email, mobile, birthday, address, created_at: new Date() }]);
+    res.json(result);
+
+});
+
+app.use('/ab', require(__dirname + '/routes/address_book'));
+
 //------------------------------------------------------------------------
 app.use(express.static('public'));
 app.use(express.static('node_modules/bootstrap/dist'));
