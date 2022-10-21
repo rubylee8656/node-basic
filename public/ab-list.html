@@ -37,8 +37,8 @@
         const t_container = document.querySelector('.table-container');
         const p_container = document.querySelector('.pagi-container');
 
-        function renderPagi({page,totalPages}){
-            return`
+        function renderPagi({ page, totalPages }) {
+            return `
             <nav aria-label="Page navigation example">
                     <ul class="pagination">
                         <li class="page-item disabled">
@@ -46,17 +46,16 @@
                                 <i class="fa-solid fa-circle-arrow-left"></i>
                             </a>
                         </li>
-                        ${
-                            Array(11).fill(1).map((el,i)=>{
-                                const p = page-5+i;
-                                if(p<1 ||p>totalPages) return'';
-                                return`
-                                <li class="page-item ${p===page ? 'active':''}">
+                        ${Array(11).fill(1).map((el, i) => {
+                const p = page - 5 + i;
+                if (p < 1 || p > totalPages) return '';
+                return `
+                                <li class="page-item ${p === page ? 'active' : ''}">
                                     <a class="page-link" href="javascript:gotoPage(${p})">${p}</a>
                                 </li>
                                 `
-                            }).join('')
-                        }
+            }).join('')
+                }
                         <li class="page-item ">
                             <a class="page-link" href="#">
                                 <i class="fa-solid fa-circle-arrow-right"></i>
@@ -66,8 +65,8 @@
                 </nav>
             `;
         }
-        function renderTable({rows}){
-            return`
+        function renderTable({ rows }) {
+            return `
             <table class="table table-striped table-bordered">
                     <thead>
                         <tr>
@@ -80,8 +79,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        ${rows.map(el=>{
-                            return`
+                        ${rows.map(el => {
+                return `
                             <tr>
                                 <td>${el.sid}</td>
                                 <td>${el.name}</td>
@@ -91,26 +90,23 @@
                                 <td>${el.address}</td>
                             </tr>
                             `;
-                        }).join('')}
+            }).join('')}
                         
                     </tbody>
                 </table>
             `;
         }
 
-        const search = location.search;
-        fetch('/ab/api'+search)
-        .then(r=>r.json())
-        .then(result=>{
-            console.log(result);
-            t_container.innerHTML = renderTable(result);
-            p_container.innerHTML = renderPagi(result);
-        })
-
-        async function getDate(){
+        async function getDataAndRender() {
 
             const usp = new URLSearchParams(location.search);
-            const r = await fetch('/ab/api?'+usp.toString());
+            if (usp.get('search')){
+                document.forms[0].search.value = usp.get('search');
+            }else{
+                document.form[0].search.value = '';
+            }
+
+            const r = await fetch('/ab/api?' + usp.toString());
             const result = await r.json();
 
             console.log(result);
@@ -119,34 +115,27 @@
 
         }
 
-        function doSearch(event){
+        getDataAndRender();
+
+        function doSearch(event) {
             event.preventDefault();
             const f = event.currentTarget;
-            const usp = new URLSearchParams({search:f.search.value});
-            history.pushState('','','?'+usp.toString());
-            getDate();
+            const usp = new URLSearchParams({ search: f.search.value });
+            history.pushState('', '', '?' + usp.toString());
+            getDataAndRender();
 
         }
-        function gotoPage(p){
+        function gotoPage(p) {
 
             const usp = new URLSearchParams(location.search);
-            usp.set('page',p);
-            history.pushState('','','?'+usp.toString());
-            getDate();
+            usp.set('page', p);
+            history.pushState('', '', '?' + usp.toString());
+            getDataAndRender();
 
         }
 
-        window.addEventListener('popstate',function(){
-            console.log(location.search);
-            const usp = new URLSearchParams(location.search);
-            if(usp.get('search')){
-                document.forms[0].search.value = usp.get('search');
-            }
-            else
-            {
-                document.forms[0].search.value = ''; 
-            }
-        })
+        window.addEventListener('popstate', getDataAndRender);
+
     </script>
 </body>
 

@@ -5,8 +5,9 @@ const MysqlStore = require('express-mysql-session')(session);
 const moment = require('moment-timezone');
 const db = require(__dirname + '/modules/db_connect2');
 const sessionStore = new MysqlStore({}, db);
+const cors = require('cors');
 
-express.miee = '一切OK';
+express.miee = '一切乖乖';
 // const multer = require('multer');
 // const upload = multer({ dest: 'tmp_uploads/' });
 const upload = require(__dirname + '/modules/upload-img');
@@ -16,6 +17,15 @@ const app = express();
 
 app.set('view engine', 'ejs');
 //top-level middleware
+const corsOptions = {
+    credentials: true,
+    origin: function (origin, callback) {
+        // console.log({origin});
+        callback(null,true);
+    }
+};
+app.use(cors(corsOptions));
+
 app.use(session({
     saveUninitialized: false,
     resave: false,
@@ -28,10 +38,11 @@ app.use(session({
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-app.use((req,res,next)=>{
+app.use((req, res, next) => {
     //自己定義的template helper function
-    res.locals.toDateString = (d)=>moment(d).format('YYYY-MM-DD');
-    res.locals.toDatetimeString = (d)=>moment(d).format('YYYY-MM-DD HH:mm:ss');
+    res.locals.toDateString = (d) => moment(d).format('YYYY-MM-DD');
+    res.locals.toDatetimeString = (d) => moment(d).format('YYYY-MM-DD HH:mm:ss');
+    res.locals.title = '今天要來點乖乖嗎';
     next();
 })
 /*app.get('/a.html', (req, res) => {
