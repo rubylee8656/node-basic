@@ -4,10 +4,12 @@ const db = require(__dirname + '/../modules/db_connect2');
 const upload = require(__dirname + './../modules/upload-img');
 
 router.use((req, res, next) => {
-
-    next();
-})
-
+    if(req.session.admin&&req.session.admin.account){
+        next();
+    }else{
+        res.status(403).send('沒有權限')
+    }
+});
 
 async function getListData(req, res) {
     const perPage = 10;
@@ -112,10 +114,10 @@ router.put('/edit/:sid', async (req, res) => {
 })
 
 //刪除資料
-router.delete('/del/:sid',async(req,res)=>{
+router.delete('/del/:sid', async (req, res) => {
     const sql = "DELETE FROM address_book WHERE sid=?";
-    const [result] = await db.query(sql,[req.params.sid]);
-    res.json({success:!!result.affectedRows});
+    const [result] = await db.query(sql, [req.params.sid]);
+    res.json({ success: !!result.affectedRows, result });
 });
 
 router.get('/item/:id', async (req, res) => {

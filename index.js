@@ -6,6 +6,7 @@ const moment = require('moment-timezone');
 const db = require(__dirname + '/modules/db_connect2');
 const sessionStore = new MysqlStore({}, db);
 const cors = require('cors');
+const axios = require('axios');
 
 express.miee = '一切乖乖';
 // const multer = require('multer');
@@ -21,7 +22,7 @@ const corsOptions = {
     credentials: true,
     origin: function (origin, callback) {
         // console.log({origin});
-        callback(null,true);
+        callback(null, true);
     }
 };
 app.use(cors(corsOptions));
@@ -43,6 +44,7 @@ app.use((req, res, next) => {
     res.locals.toDateString = (d) => moment(d).format('YYYY-MM-DD');
     res.locals.toDatetimeString = (d) => moment(d).format('YYYY-MM-DD HH:mm:ss');
     res.locals.title = '今天要來點乖乖嗎';
+    res.locals.session = req.session;
     next();
 })
 /*app.get('/a.html', (req, res) => {
@@ -187,6 +189,71 @@ app.get('/try-db-add2', async (req, res) => {
 });
 
 app.use('/ab', require(__dirname + '/routes/address_book'));
+
+app.get('/fake-login', (req, res) => {
+    req.session.admin = {
+        id: 12,
+        account: 'kiki',
+        nickname: 'ki'
+    };
+    res.redirect('/');
+});
+
+app.get('/logout', (req, res) => {
+    delete req.session.admin;
+    res.redirect('/');
+});
+
+app.get('/yahoo', async (req, res) => {
+    const response = await axios.get('http://tw.yahoo.com/');
+    res.send(response.data);
+});
+//二層分類
+app.get('/cate', async (req, res) => {
+    const [rows] = await db.query("SELECT * FROM categories");
+    // res.json(rows);
+    const firsts = [];
+    for (let i of rows) {
+        if (i.parent_sid === 0) {
+            firsts.push(i);
+        }
+    }
+    for (let f of firsts) {
+        for (let i of rows) {
+            if (f.sid === i.parent_sid) {
+                f.children ||= [];
+                f.children.push(i);
+            }
+        }
+    }
+    res.json(firsts);
+});
+//三層分類
+app.get('/cate2', async (req, res) => {
+    const [rows] = await db.query("SELECT * FROM categories");
+    const dict = {};
+    //編輯字典
+    for(let i of rows){
+        dict[i.sid] = i;
+    }
+
+    for(let i of rows){
+        if(i.parent_sid!=0){
+            const p = dict[i.parent_sid];
+            p.children ||= [];
+            p.children.push(i);
+            // res.json(p);
+        }
+    }
+    //把第一層拿出來
+    const firsts = [];
+    for(let i of rows){
+        if(i.parent_sid===0){
+            firsts.push(i);
+        }
+    }
+    res.json(firsts);
+});
 
 //------------------------------------------------------------------------
 app.use(express.static('public'));
