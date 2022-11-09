@@ -190,19 +190,19 @@ app.get('/try-db-add2', async (req, res) => {
 
 app.use('/ab', require(__dirname + '/routes/address_book'));
 
-app.get('/fake-login', (req, res) => {
-    req.session.admin = {
-        id: 12,
-        account: 'kiki',
-        nickname: 'ki'
-    };
-    res.redirect('/');
-});
+// app.get('/fake-login', (req, res) => {
+//     req.session.admin = {
+//         id: 12,
+//         account: 'kiki',
+//         nickname: 'ki'
+//     };
+//     res.redirect('/');
+// });
 
-app.get('/logout', (req, res) => {
-    delete req.session.admin;
-    res.redirect('/');
-});
+// app.get('/logout', (req, res) => {
+//     delete req.session.admin;
+//     res.redirect('/');
+// });
 
 app.get('/yahoo', async (req, res) => {
     const response = await axios.get('http://tw.yahoo.com/');
